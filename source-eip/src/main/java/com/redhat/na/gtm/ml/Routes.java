@@ -76,21 +76,12 @@ public class Routes extends RouteBuilder {
           .doFinally()
                 .setBody().header(Util.RESPONSE_HEADER)
           .end();
-            
-        from("seda:writeVerifiedPayloadToFilesystem")
-            .routeId("direct:writeVerifiedPayloadToFilesystem")
-            .split(body())
-            .to("file:{{himss.scm.gzip.location}}");
-
-
-
 
     
         /*****                Consume from filesystem           *************/
-        from("file:{{himss.scm.gzip.location}}?initialDelay=0&delay=1000&autoCreate=true&delete=false")
-            .routeId("direct:unpackGzip")
-                //.unmarshal()
-                //.log("file = ${header.CamelFileName}}")
+        from("file:{{com.rht.na.gtm.source.location}}?initialDelay=0&delay=1000&autoCreate=true&delete=false")
+            .routeId("direct:readCSVs")
+                .log("file = ${header.CamelFileName}}")
                 .split(body())
                   .streaming()
                   .process(e -> {
@@ -101,7 +92,7 @@ public class Routes extends RouteBuilder {
                       e.getIn().setHeader(Util.FILE_NAME_HEADER, parsedFileName);
                   })
                   //.to("direct:processTextFile")
-                  .to("kafka:{{himss.scm_topic_name}}?brokers={{kafka.bootstrap.servers}}")
+                  .to("kafka:{{com.rht.na.gtm.topic.name}}?brokers={{kafka.bootstrap.servers}}&clientId=source&groupId=rht")
                 .end();
 
         from("direct:processTextFile")
