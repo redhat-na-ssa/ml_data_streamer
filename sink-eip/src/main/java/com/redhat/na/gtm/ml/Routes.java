@@ -1,12 +1,8 @@
 package com.redhat.na.gtm.ml;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
 
-import jakarta.activation.DataHandler;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -14,9 +10,9 @@ import org.jboss.logging.Logger;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.Processor;
-import org.apache.camel.attachment.AttachmentMessage;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.rest.RestBindingMode;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 /**
  * Camel route definitions.
@@ -28,6 +24,9 @@ public class Routes extends RouteBuilder {
     
     @Inject
     CSVPayloadProcessor csvPayLoadProcessor;
+
+    @ConfigProperty(name="com.redhat.na.gtm.ml.dump_headers", defaultValue = "false")
+    boolean dumpHeaders = false;
     
     public Routes() {
     }
@@ -64,13 +63,26 @@ public class Routes extends RouteBuilder {
         @Override
         public void process(Exchange exchange) throws ValidationException {
 
-            Object fileNameHeaderObj = exchange.getIn().getHeader(Util.FILE_NAME_HEADER);
-            if(fileNameHeaderObj == null)
-              throw new ValidationException("000002 Must pass kafka header of: "+Util.FILE_NAME_HEADER);
+            if(dumpHeaders) {
+                Map<String, Object> headers = exchange.getIn().getHeaders();
+                for(Entry<String, Object> hEntry : headers.entrySet()){
+                    log.info("headers: "+hEntry.getKey()+" :"+hEntry.getValue());
+                }
+            }
 
-            String fHeader = new String((byte[])fileNameHeaderObj);
-            if(!fHeader.endsWith(Util.CSV))
-              throw new ValidationException("000003 Invalid file suffix: "+fHeader);
+            Object concatFileNum = exchange.getIn().getHeader(Util.CONCANTENATED_FILE_NUM);
+            if(concatFileNum == null)
+              throw new ValidationException("000002 Must pass kafka header of: "+Util.CONCANTENATED_FILE_NUM);
+
+            byte[] fHeaderBytes = (byte[])exchange.getIn().getHeader(Util.FILE_NAME_HEADER);
+            if(fHeaderBytes != null) {
+                String fHeader = new String(fHeaderBytes);
+                if(!fHeader.endsWith(Util.CSV)){
+                    throw new ValidationException("0000035 Invalid header suffix for file: "+fHeader);
+                }
+            }else {
+                throw new ValidationException("0000030 No header in message: "+Util.FILE_NAME_HEADER );
+            }
             
 
             Object bObj = exchange.getIn().getBody();
