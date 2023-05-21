@@ -7,6 +7,9 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import org.jboss.logging.Logger;
+
+import com.redhat.na.gtm.S3LifecycleProcessor;
+
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.Processor;
@@ -25,6 +28,9 @@ public class Routes extends RouteBuilder {
     @Inject
     CSVPayloadProcessor csvPayLoadProcessor;
 
+    @Inject
+    S3LifecycleProcessor s3LifecycleProcessor;
+
     @ConfigProperty(name="com.redhat.na.gtm.ml.dump_headers", defaultValue = "false")
     boolean dumpHeaders = false;
     
@@ -34,22 +40,29 @@ public class Routes extends RouteBuilder {
     @Override
     public void configure() throws Exception {
 
-        restConfiguration().bindingMode(RestBindingMode.json);
+        //restConfiguration().bindingMode(RestBindingMode.json);
 
         /*****                Consume from HTTP           *************/
         rest("/sanityCheck")
-                .get()
-                .to("direct:sanity");
-        
+            .post().to("seda:s3lifecycle")
+            .get().to("direct:sanity");
+                
         from("direct:sanity")
             .setBody().constant("Good To Go!");
+
+        from("seda:s3lifecycle")
+            .setBody().constant("Good To Go!")
+            .process(e -> {
+                s3LifecycleProcessor.postBody(e);
+            })
+            .end();
 
         /************               Consume from Kafka          *****************/
         from("kafka:{{com.rht.na.gtm.topic.name}}?brokers={{kafka.bootstrap.servers}}&groupId=rht&autoOffsetReset=earliest&consumersCount={{com.rht.na.gtm.kafka.consumer.count}}")
             .doTry()
                 .process(new CSVPayloadValidator())
                 .process(e -> {
-                    csvPayLoadProcessor.process(e);
+                    s3LifecycleProcessor.postBody(e);
                 })
             .doCatch(ValidationException.class)
                 .log(LoggingLevel.ERROR, exceptionMessage().toString())

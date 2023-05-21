@@ -64,21 +64,6 @@ services:
     networks:
       - rht-ml
 
-  kafdrop:
-    container_name: kafdrop
-    image: docker.io/obsidiandynamics/kafdrop:3.30.0
-    restart: always
-    ports:
-      - "8000:9000"
-    environment:
-      KAFKA_BROKERCONNECT: "rht:9092"
-      JVM_OPTS: "-Xms32M -Xmx64M"
-      SERVER_SERVLET_CONTEXTPATH: "/"
-    depends_on:
-      - kafka
-    networks:
-      - rht-ml
-
   minio:
     container_name: minio
     image: quay.io/minio/minio:RELEASE.2022-09-17T00-09-45Z.fips
@@ -96,7 +81,7 @@ services:
       MINIO_ROOT_PASSWORD: minio123
 
       # Used by minio console to invoke minio REST APIs
-      MINIO_SERVER_URL: 'http://localhost:9000'
+      MINIO_SERVER_URL: 'http://rht:9000'
     networks:
       - rht-ml
 

@@ -5,8 +5,6 @@ import java.text.SimpleDateFormat;
 
 import org.apache.camel.Exchange;
 
-import io.netty.util.internal.StringUtil;
-
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.jboss.logging.Logger;
@@ -18,7 +16,7 @@ import org.eclipse.microprofile.metrics.annotation.Timed;
 @ApplicationScoped
 public class CSVPayloadProcessor {
 
-    private static Logger log = Logger.getLogger(Routes.class);
+    private static Logger log = Logger.getLogger(CSVPayloadProcessor.class);
     private static DateFormat dfObj = new SimpleDateFormat();
     private static long zeroLong = 0L;
 

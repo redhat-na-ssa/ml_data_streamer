@@ -35,9 +35,18 @@
         <groupId>org.apache.camel.quarkus</groupId>
         <artifactId>camel-quarkus-rest</artifactId>
     </dependency>
+    <!--dependency>
+        <groupId>org.apache.camel.quarkus</groupId>
+        <artifactId>camel-quarkus-aws2-s3</artifactId>
+    </dependency>
     <dependency>
         <groupId>org.apache.camel.quarkus</groupId>
-        <artifactId>camel-quarkus-file</artifactId>
+        <artifactId>camel-quarkus-minio</artifactId>
+    </dependency-->
+    <dependency>
+        <groupId>io.quarkiverse.minio</groupId>
+        <artifactId>quarkus-minio</artifactId>
+        <version>3.0.2</version>
     </dependency>
 
     <!-- kafka -->
