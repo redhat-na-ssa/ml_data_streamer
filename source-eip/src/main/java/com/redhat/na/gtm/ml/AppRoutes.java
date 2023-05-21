@@ -5,7 +5,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Set;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.Dependent;
+import picocli.CommandLine;
 
 import org.jboss.logging.Logger;
 
@@ -17,32 +20,37 @@ import org.apache.camel.component.file.FileConstants;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-/**
- * Camel route definitions.
- */
 @ApplicationScoped
-public class Routes extends RouteBuilder {
+public class AppRoutes extends RouteBuilder {
 
-    private static Logger log = Logger.getLogger(Routes.class);
+    private static Logger log = Logger.getLogger(AppRoutes.class);
     private static DateFormat dfObj = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
 
     @ConfigProperty(name="com.redhat.na.gtm.ml.csv_contains_header", defaultValue = "True")
     boolean csvContainsHeader=true;
-    
-    public Routes() {
+
+    CommandLine.ParseResult parseResult;
+
+    public AppRoutes() {
+    }
+
+    @PostConstruct
+    public void start() {
+
     }
 
     @Override
     public void configure() throws Exception {
 
-        restConfiguration().bindingMode(RestBindingMode.json);
+        //restConfiguration().bindingMode(RestBindingMode.json);
 
         /*****                Consume from HTTP           *************/
         rest("/sanityCheck")
-                .get()
-                .to("direct:sanity");
+            .get()
+            .to("direct:sanity");
 
         from("direct:sanity")
+            .routeId("direct:sanity")
             .setBody().constant("Good To Go!");
 
     
