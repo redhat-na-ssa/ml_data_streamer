@@ -5,9 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Set;
 
-import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.context.Dependent;
 import picocli.CommandLine;
 
 import org.jboss.logging.Logger;
@@ -34,13 +32,9 @@ public class AppRoutes extends RouteBuilder {
     public AppRoutes() {
     }
 
-    @PostConstruct
-    public void start() {
-
-    }
-
     @Override
     public void configure() throws Exception {
+
 
         //restConfiguration().bindingMode(RestBindingMode.json);
 

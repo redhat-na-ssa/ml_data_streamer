@@ -1,0 +1,9 @@
+== source-eip
+
+-----
+$ java  \
+    -Dkafka.bootstrap.servers=rht:9092 \
+    -Dcom.rht.na.gtm.source.location=/tmp/com_rht_na_gtm_source/ \
+    -Dcom.rht.na.gtm.topic.name=csv-financials \
+    -jar source-eip/target/quarkus-app/quarkus-run.jar
+-----
