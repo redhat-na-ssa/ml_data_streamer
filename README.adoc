@@ -1,5 +1,30 @@
-== source-eip
+== source-eipa
 
+=== Test 
+
+. Start `source-eip` app as linux-container:
++
+-----
+$ podman run  -it --rm \
+        --publish 8080:8080 \
+        --name source-eip \
+        -e 'JAVA_OPTS=-Dkafka.bootstrap.servers=rht:9092 -Dcom.rht.na.gtm.source.location=/tmp/com_rht_na_gtm_source/' \
+        quay.io/redhat_naps_da/ml_data_streamer-source-eip:0.0.1
+-----
+
+. Trigger source-eip service:
++
+-----
+$ cp src/test/resources/samples/MUFG-1.csv \
+     src/test/resources/samples/MUFG-2.csv \
+     src/test/resources/samples/MUFG-3.csv \
+     /tmp/com_rht_na_gtm_source/
+-----
+
+
+=== Development
+. Start quarkus runnable jar:
++
 -----
 $ java  \
     -Dkafka.bootstrap.servers=rht:9092 \
@@ -7,3 +32,17 @@ $ java  \
     -Dcom.rht.na.gtm.topic.name=csv-financials \
     -jar source-eip/target/quarkus-app/quarkus-run.jar
 -----
+
+. Build and push source-eip container to quay:
++
+-----
+$ ./mvnw clean package \
+            -DskipTests \
+            -Dquarkus.application.name=ml_data_streamer-source-eip \
+            -Dquarkus.container-image.build=true \
+            -Dquarkus.container-image.push=true
+-----
+
+
+
+. Expose Strimzi to link:https://itnext.io/kafka-on-kubernetes-the-strimzi-way-part-2-43192f1dd831[external clients]

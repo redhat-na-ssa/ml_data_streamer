@@ -12,5 +12,11 @@ public class Util {
     public static final String RESPONSE_HEADER="RESPONSE_HEADER";
     public static final String FILE_NAME_HEADER="FILE_NAME_HEADER";
     public static final String CONCANTENATED_FILE_NUM="CONCANTENATED_FILE_NUM";
+
+    public static final String CSV_DIR_PROP_NAME="com.rht.na.gtm.source.location";
+    public static final String DEFAULT_CSV_DIR="/tmp/com_rht_na_gtm_source/";
+
+    public static final String TOPIC_PROP_NAME="com.rht.na.gtm.topic.name";
+    public static final String DEFAULT_TOPIC_NAME="csv-financials";
     
 }
