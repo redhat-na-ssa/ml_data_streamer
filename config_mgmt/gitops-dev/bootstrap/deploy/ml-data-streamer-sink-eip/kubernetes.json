@@ -1,0 +1,194 @@
+[{
+  "apiVersion" : "v1",
+  "kind" : "ServiceAccount",
+  "metadata" : {
+    "labels" : {
+      "app.kubernetes.io/name" : "ml-data-streamer-sink-eip",
+      "app.kubernetes.io/managed-by" : "quarkus"
+    },
+    "name" : "ml-data-streamer-sink-eip"
+  }
+},{
+  "apiVersion" : "rbac.authorization.k8s.io/v1",
+  "kind" : "RoleBinding",
+  "metadata" : {
+    "name" : "ml-data-streamer-sink-eip-view"
+  },
+  "roleRef" : {
+    "kind" : "ClusterRole",
+    "apiGroup" : "rbac.authorization.k8s.io",
+    "name" : "view"
+  },
+  "subjects" : [ {
+    "kind" : "ServiceAccount",
+    "name" : "ml-data-streamer-sink-eip"
+  } ]
+},{
+  "apiVersion" : "v1",
+  "kind" : "Service",
+  "metadata" : {
+    "annotations" : {
+      "prometheus.io/scheme" : "http",
+      "prometheus.io/port" : "8080",
+      "prometheus.io/path" : "/q/metrics",
+      "prometheus.io/scrape" : "true"
+    },
+    "labels" : {
+      "app.kubernetes.io/name" : "ml-data-streamer-sink-eip",
+      "app.kubernetes.io/managed-by" : "quarkus"
+    },
+    "name" : "ml-data-streamer-sink-eip"
+  },
+  "spec" : {
+    "ports" : [ {
+      "name" : "http",
+      "port" : 8080,
+      "protocol" : "TCP",
+      "targetPort" : 8080
+    }, {
+      "name" : "https",
+      "port" : 443,
+      "protocol" : "TCP",
+      "targetPort" : 8443
+    } ],
+    "selector" : {
+      "app.kubernetes.io/name" : "ml-data-streamer-sink-eip"
+    },
+    "type" : "ClusterIP"
+  }
+},{
+  "apiVersion" : "apps/v1",
+  "kind" : "Deployment",
+  "metadata" : {
+    "annotations" : {
+      "prometheus.io/scheme" : "http",
+      "prometheus.io/port" : "8080",
+      "prometheus.io/path" : "/q/metrics",
+      "prometheus.io/scrape" : "true"
+    },
+    "labels" : {
+      "app.kubernetes.io/name" : "ml-data-streamer-sink-eip",
+      "app.kubernetes.io/managed-by" : "quarkus"
+    },
+    "name" : "ml-data-streamer-sink-eip"
+  },
+  "spec" : {
+    "replicas" : 1,
+    "selector" : {
+      "matchLabels" : {
+        "app.kubernetes.io/name" : "ml-data-streamer-sink-eip"
+      }
+    },
+    "template" : {
+      "metadata" : {
+        "annotations" : {
+          "prometheus.io/scheme" : "http",
+          "prometheus.io/port" : "8080",
+          "prometheus.io/path" : "/q/metrics",
+          "prometheus.io/scrape" : "true"
+        },
+        "labels" : {
+          "app.kubernetes.io/name" : "ml-data-streamer-sink-eip",
+          "app.kubernetes.io/managed-by" : "quarkus"
+        }
+      },
+      "spec" : {
+        "containers" : [ {
+          "env" : [ {
+            "name" : "KUBERNETES_NAMESPACE",
+            "valueFrom" : {
+              "fieldRef" : {
+                "fieldPath" : "metadata.namespace"
+              }
+            }
+          }, {
+            "name" : "JAVA_OPTIONS",
+            "value" : "-Dvertx.metrics.options.enabled=true -Dvertx.metrics.options.registryName=prometheus"
+          } ],
+          "image" : "quay.io/redhat_naps_da/ml-data-streamer-sink-eip:0.0.1",
+          "imagePullPolicy" : "Always",
+          "livenessProbe" : {
+            "failureThreshold" : 3,
+            "httpGet" : {
+              "path" : "/q/health/live",
+              "port" : 8080,
+              "scheme" : "HTTP"
+            },
+            "initialDelaySeconds" : 5,
+            "periodSeconds" : 10,
+            "successThreshold" : 1,
+            "timeoutSeconds" : 10
+          },
+          "name" : "ml-data-streamer-sink-eip",
+          "ports" : [ {
+            "containerPort" : 8443,
+            "name" : "https",
+            "protocol" : "TCP"
+          }, {
+            "containerPort" : 8080,
+            "name" : "http",
+            "protocol" : "TCP"
+          } ],
+          "readinessProbe" : {
+            "failureThreshold" : 3,
+            "httpGet" : {
+              "path" : "/q/health/ready",
+              "port" : 8080,
+              "scheme" : "HTTP"
+            },
+            "initialDelaySeconds" : 5,
+            "periodSeconds" : 10,
+            "successThreshold" : 1,
+            "timeoutSeconds" : 10
+          },
+          "resources" : {
+            "limits" : {
+              "cpu" : "500m",
+              "memory" : "512Mi"
+            },
+            "requests" : {
+              "cpu" : "100m",
+              "memory" : "128Mi"
+            }
+          },
+          "startupProbe" : {
+            "failureThreshold" : 3,
+            "httpGet" : {
+              "path" : "/q/health/started",
+              "port" : 8080,
+              "scheme" : "HTTP"
+            },
+            "initialDelaySeconds" : 5,
+            "periodSeconds" : 10,
+            "successThreshold" : 1,
+            "timeoutSeconds" : 10
+          },
+          "volumeMounts" : [ {
+            "mountPath" : "/deployments/config",
+            "name" : "config",
+            "readOnly" : false
+          } ]
+        } ],
+        "initContainers" : [ {
+          "args" : [ "pod", "-lstrimzi.io/name=kafka-connect-connect" ],
+          "image" : "quay.io/jbride/k8s-wait-for:no-root-v1.7",
+          "imagePullPolicy" : "IfNotPresent",
+          "name" : "check-kafka"
+        } ],
+        "serviceAccountName" : "ml-data-streamer-sink-eip",
+        "volumes" : [ {
+          "configMap" : {
+            "defaultMode" : 420,
+            "items" : [ {
+              "key" : "application.properties",
+              "path" : "application.properties"
+            } ],
+            "name" : "ml-data-streamer-sink-eip",
+            "optional" : false
+          },
+          "name" : "config"
+        } ]
+      }
+    }
+  }
+}]

@@ -75,6 +75,16 @@
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-container-image-docker</artifactId>
     </dependency>
+    <dependency>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-kubernetes</artifactId>
+    </dependency>
+
+    <!-- Auto generate a "view" enabled Kubernetes RoleBinding and corresponding Service Account -->
+    <dependency>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-kubernetes-client</artifactId>
+    </dependency>
 
 
     <dependency>
