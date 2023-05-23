@@ -4,6 +4,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import picocli.CommandLine;
@@ -26,6 +28,12 @@ public class AppRoutes extends RouteBuilder {
 
     @ConfigProperty(name="com.redhat.na.gtm.ml.csv_contains_header", defaultValue = "True")
     boolean csvContainsHeader=true;
+
+    @ConfigProperty(name="com.redhat.na.gtm.ml.aggregator_max_expected_files", defaultValue = "5")
+    int maxExpectedFiles;
+
+    @ConfigProperty(name="com.redhat.na.gtm.ml.aggregator_completion_timeout_millis", defaultValue = "2000")
+    int completionTimeoutMillis;
 
     CommandLine.ParseResult parseResult;
 
@@ -53,8 +61,8 @@ public class AppRoutes extends RouteBuilder {
             .routeId("direct:readCSVs")
                 .log(LoggingLevel.DEBUG, "file = ${header.CamelFileName}}")
                 .aggregate(header(FileConstants.FILE_PARENT), new SimpleCSVAggregator(csvContainsHeader))
-                .completionSize(5)
-                .completionTimeout(2000)
+                .completionSize(maxExpectedFiles)
+                .completionTimeout(completionTimeoutMillis)
                 .process(new PostCSVAggregatorProcessor())
                 //.to("direct:processTextFile")
                 .to("kafka:{{com.rht.na.gtm.topic.name}}?brokers={{kafka.bootstrap.servers}}&clientId=source&groupId=rht")
@@ -76,18 +84,31 @@ public class AppRoutes extends RouteBuilder {
         public void process(Exchange e) throws ValidationException {
             Set<String> csvSet = (Set<String>)e.getIn().getBody(Set.class);
             e.getIn().setHeader(Util.CONCANTENATED_FILE_NUM, csvSet.size());
+
+            // Set Exchange body from Set of CSVs to a single file
             StringBuilder sBuilder = new StringBuilder();
-            log.info("readCSVs() # CSVs = "+csvSet.size());
             for(String csv : csvSet){
                 sBuilder.append(csv);
             }
             e.getIn().setBody(sBuilder.toString());
 
+            log.infov("readCSVs() # CSVs = {0} ; Total records = {1}", csvSet.size(), newLineCounter(sBuilder.toString()));
+
+            // Set a file name for aggregated CSV
             String originalFileName = (String)e.getIn().getHeader("CamelFileName");
             int lastDirIndex = originalFileName.lastIndexOf("/");
             String parsedFileName = dfObj.format(new Date())+"-"+originalFileName.substring(lastDirIndex+1);
             log.debug("prepKafkaProducer()  originalFileName = "+originalFileName+" : parsedFileName = "+parsedFileName);
             e.getIn().setHeader(Util.FILE_NAME_HEADER, parsedFileName);
+        }
+
+        public int newLineCounter(String input) {
+            Matcher m = Pattern.compile("\r\n|\r|\n").matcher(input);
+            int lines = 1;
+            while (m.find()){
+                lines ++;
+            }
+            return lines;
         }
     }
 }

@@ -26,6 +26,8 @@ public class SimpleCSVAggregator implements AggregationStrategy {
 
         String body = newExchange.getIn().getBody(String.class);
         if(oldExchange == null) {
+
+            // Set Exchange body as a Set and add first CSV file
             Set<String>  set = new HashSet<String>();
             set.add(body);
             newExchange.getIn().setBody(set);
@@ -38,9 +40,9 @@ public class SimpleCSVAggregator implements AggregationStrategy {
                 body = body.substring(index+1);
             }
 
+            // Add csv to Exchange body set
             Set<String> set = oldExchange.getIn().getBody(Set.class);
             set.add(body);
-            log.debug("Total CSVs in set = "+set.size());
             return oldExchange;
         }
     }
