@@ -22,7 +22,7 @@ export kafka_route_host=$(oc get route kafka-cluster-kafka-bootstrap -n $project
 . Clone this project and change directories into it:
 +
 -----
-$ https://github.com/redhat-na-ssa/ml_data_streamer \
+$ git clone https://github.com/redhat-na-ssa/ml_data_streamer \
     && cd ml_data_streamer
 -----
 
@@ -95,7 +95,7 @@ $ keytool \
     -keystore $ts_path
 -----
 
-. Optional:  If the `kafka-console-producer.sh` utility is avialable locally, test connection to broker and sending of messages:
+. Optional:  If the `kafka-console-producer.sh` utility is avialable locally, test connection to broker by sending messages:
 +
 -----
 $ bin/kafka-console-producer.sh \

@@ -1,7 +1,7 @@
 package com.redhat.na.gtm.ml;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.camel.AggregationStrategy;
 import org.apache.camel.Exchange;
@@ -28,7 +28,7 @@ public class SimpleCSVAggregator implements AggregationStrategy {
         if(oldExchange == null) {
 
             // Set Exchange body as a Set and add first CSV file
-            Set<String>  set = new HashSet<String>();
+            List<String>  set = new ArrayList<String>();
             set.add(body);
             newExchange.getIn().setBody(set);
             return newExchange;
@@ -41,7 +41,7 @@ public class SimpleCSVAggregator implements AggregationStrategy {
             }
 
             // Add csv to Exchange body set
-            Set<String> set = oldExchange.getIn().getBody(Set.class);
+            List<String> set = oldExchange.getIn().getBody(List.class);
             set.add(body);
             return oldExchange;
         }

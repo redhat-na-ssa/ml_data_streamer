@@ -3,7 +3,7 @@ package com.redhat.na.gtm.ml;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Set;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -82,7 +82,7 @@ public class AppRoutes extends RouteBuilder {
 
         @Override
         public void process(Exchange e) throws ValidationException {
-            Set<String> csvSet = (Set<String>)e.getIn().getBody(Set.class);
+            List<String> csvSet = (List<String>)e.getIn().getBody(List.class);
             e.getIn().setHeader(Util.CONCANTENATED_FILE_NUM, csvSet.size());
 
             // Set Exchange body from Set of CSVs to a single file
