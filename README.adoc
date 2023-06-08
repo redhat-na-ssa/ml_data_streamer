@@ -7,6 +7,12 @@
 
 :numbered:
 
+== Architecture
+
+image::docs/images/ml_data_streamer_arch_diagram.png[]
+
+image::
+
 == Pre-Reqs
 
 . Set environment variables:
