@@ -3,13 +3,11 @@ package com.redhat.na.gtm.ml;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import org.jboss.logging.Logger;
-
-import com.redhat.na.gtm.S3LifecycleProcessor;
-
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.Processor;
@@ -33,6 +31,10 @@ public class Routes extends RouteBuilder {
 
     @ConfigProperty(name="com.redhat.na.gtm.ml.dump_headers", defaultValue = "false")
     boolean dumpHeaders = false;
+
+    @PostConstruct
+    void start() {
+    }
     
     public Routes() {
     }

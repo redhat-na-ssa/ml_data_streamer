@@ -24,7 +24,7 @@ kind: Service
 metadata:
   annotations:
     prometheus.io/scheme: http
-    prometheus.io/port: "8080"
+    prometheus.io/port: "3080"
     prometheus.io/path: /q/metrics
     prometheus.io/scrape: "true"
   labels:
@@ -36,7 +36,7 @@ spec:
     - name: http
       port: 8080
       protocol: TCP
-      targetPort: 8080
+      targetPort: 3080
     - name: https
       port: 443
       protocol: TCP
@@ -50,7 +50,7 @@ kind: Deployment
 metadata:
   annotations:
     prometheus.io/scheme: http
-    prometheus.io/port: "8080"
+    prometheus.io/port: "3080"
     prometheus.io/path: /q/metrics
     prometheus.io/scrape: "true"
   labels:
@@ -66,7 +66,7 @@ spec:
     metadata:
       annotations:
         prometheus.io/scheme: http
-        prometheus.io/port: "8080"
+        prometheus.io/port: "3080"
         prometheus.io/path: /q/metrics
         prometheus.io/scrape: "true"
       labels:
@@ -87,7 +87,7 @@ spec:
             failureThreshold: 3
             httpGet:
               path: /q/health/live
-              port: 8080
+              port: 3080
               scheme: HTTP
             initialDelaySeconds: 5
             periodSeconds: 10
@@ -98,14 +98,14 @@ spec:
             - containerPort: 8443
               name: https
               protocol: TCP
-            - containerPort: 8080
+            - containerPort: 3080
               name: http
               protocol: TCP
           readinessProbe:
             failureThreshold: 3
             httpGet:
               path: /q/health/ready
-              port: 8080
+              port: 3080
               scheme: HTTP
             initialDelaySeconds: 5
             periodSeconds: 10
@@ -122,7 +122,7 @@ spec:
             failureThreshold: 3
             httpGet:
               path: /q/health/started
-              port: 8080
+              port: 3080
               scheme: HTTP
             initialDelaySeconds: 5
             periodSeconds: 10

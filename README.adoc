@@ -147,7 +147,66 @@ $ cp source-eip/src/test/resources/samples/MUFG-1.csv \
      $csv_dir
 -----
 
-==== Optional: Run Container as Rootless
+
+
+== sink-eip
+
+=== Development
+
+. Build and push sink-eip container to quay:
++
+-----
+$ ./mvnw clean package \
+            -DskipTests \
+            -Dquarkus.application.name=ml-data-streamer-sink-eip \
+            -Dquarkus.container-image.build=true \
+            -Dquarkus.container-image.push=true
+-----
+
+=== Deployment
+
+. create new namespace where `sink-eip` service will run:
++
+-----
+$ oc new-project $project_name
+-----
+
+. Deploy `sink-eip` service:
++
+-----
+$ oc apply \
+    -k config_mgmt/gitops-dev/bootstrap/deploy/ml-data-streamer-sink-eip/
+    -n $project_name
+-----
+
+
+== Kafka
+
+=== Deployment
+
+. Create topic:
++
+-----
+$ export topic_name=csv-financials
+$ echo "kind: KafkaTopic
+apiVersion: kafka.strimzi.io/v1beta2
+metadata:
+  name: $topic_name
+  labels:
+    strimzi.io/cluster: $topic_name
+spec:
+  partitions: 10
+  replicas: 3
+  config:
+    retention.ms: 604800000
+    segment.bytes: 1073741824" \
+| oc apply -n $project_name -f -
+
+-----
+
+== Appendix
+
+==== Optional: Run `source-eip` container as Rootless
 
 . Start `source-eip` app as linux-container:
 +
@@ -179,52 +238,5 @@ $ podman unshare cp \
     source-eip/src/test/resources/samples/MUFG-2.csv \
     source-eip/src/test/resources/samples/MUFG-3.csv \
     $csv_dir
------
-
-== sink-eip
-
-=== Development
-
-. Build and push sink-eip container to quay:
-+
------
-$ ./mvnw clean package \
-            -DskipTests \
-            -Dquarkus.application.name=ml-data-streamer-sink-eip \
-            -Dquarkus.container-image.build=true \
-            -Dquarkus.container-image.push=true
------
-
-=== Deployment
-
------
-$ oc apply \
-    -k config_mgmt/gitops-dev/bootstrap/deploy/ml-data-streamer-sink-eip/
-    -n $project_name
------
-
-
-== Kafka
-
-=== Deployment
-
-. Create topic:
-+
------
-$ export topic_name=csv-financials
-$ echo "kind: KafkaTopic
-apiVersion: kafka.strimzi.io/v1beta2
-metadata:
-  name: $topic_name
-  labels:
-    strimzi.io/cluster: $topic_name
-spec:
-  partitions: 10
-  replicas: 3
-  config:
-    retention.ms: 604800000
-    segment.bytes: 1073741824" \
-| oc apply -n $project_name -f -
-
 -----
 

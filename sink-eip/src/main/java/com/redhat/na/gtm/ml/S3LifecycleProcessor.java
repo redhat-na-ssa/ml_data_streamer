@@ -1,4 +1,4 @@
-package com.redhat.na.gtm;
+package com.redhat.na.gtm.ml;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -12,9 +12,8 @@ import java.util.Set;
 
 import org.apache.camel.Exchange;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.health.Startup;
 import org.jboss.logging.Logger;
-
-import com.redhat.na.gtm.ml.Util;
 
 import io.minio.BucketExistsArgs;
 import io.minio.ComposeObjectArgs;
@@ -30,8 +29,10 @@ import io.minio.errors.InvalidResponseException;
 import io.minio.errors.ServerException;
 import io.minio.errors.XmlParserException;
 import io.quarkiverse.minio.client.MinioQualifier;
+import io.quarkus.runtime.StartupEvent;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 
 @ApplicationScoped
@@ -58,13 +59,15 @@ public class S3LifecycleProcessor {
     @ConfigProperty(name = "com.rht.na.gtm.s3.minIOobjectTags")
     protected String minIOobjectTags;
 
-    @PostConstruct
-    void start() {
+    //@PostConstruct
+    void start(@Observes StartupEvent event) {
         try {
             boolean bucketExists = mClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
             if(!bucketExists) {
                 log.infov("About to make new bucket: {0}", bucketName);
                 mClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
+            }else {
+                log.infov("S3 Bucket already exists: {0}", bucketName);
             }
         } catch (InvalidKeyException | ErrorResponseException | InsufficientDataException | InternalException
                 | InvalidResponseException | NoSuchAlgorithmException | ServerException | XmlParserException

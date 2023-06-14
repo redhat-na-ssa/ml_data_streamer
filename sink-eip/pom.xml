@@ -9,7 +9,7 @@
       <relativePath>../pom.xml</relativePath>
   </parent>
   <groupId>com.redhat.na.gtm.ml</groupId>
-  <artifactId>sink-eip</artifactId>
+  <artifactId>ml-data-streamer-sink-eip</artifactId>
   <version>0.0.1</version>
 
   <dependencies>
