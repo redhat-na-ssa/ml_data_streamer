@@ -56,7 +56,7 @@ $ java  \
 -----
 $ ./mvnw clean package \
             -DskipTests \
-            -Dquarkus.application.name=ml_data_streamer-source-eip \
+            -Dquarkus.application.name=ml-data-streamer-source-eip \
             -Dquarkus.container-image.build=true \
             -Dquarkus.container-image.push=true
 -----
@@ -135,7 +135,7 @@ $ podman run  -it --rm \
     -v $ts_path:$ts_path:Z \
     -v $csv_dir:$csv_dir:Z \
     -u root \
-    quay.io/redhat_naps_da/ml_data_streamer-source-eip:0.0.1
+    quay.io/redhat_naps_da/ml-data-streamer-source-eip:0.0.1
 -----
 
 . Trigger source-eip service:
@@ -227,7 +227,7 @@ $ podman run  -it --rm \
         -e "JAVA_OPTS=-Dkafka.bootstrap.servers=$kafka_route_host:$kafka_node_port -Dcom.rht.na.gtm.source.location=$csv_dir" \
         -v $csv_dir:$csv_dir:Z \
         --group-add keep-groups \
-        quay.io/redhat_naps_da/ml_data_streamer-source-eip:0.0.1
+        quay.io/redhat_naps_da/ml-data-streamer-source-eip:0.0.1
 -----
 
 . Trigger source-eip service:

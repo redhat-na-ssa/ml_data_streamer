@@ -29,7 +29,7 @@
   "metadata" : {
     "annotations" : {
       "prometheus.io/scheme" : "http",
-      "prometheus.io/port" : "3080",
+      "prometheus.io/port" : "8080",
       "prometheus.io/path" : "/q/metrics",
       "prometheus.io/scrape" : "true"
     },
@@ -44,7 +44,7 @@
       "name" : "http",
       "port" : 8080,
       "protocol" : "TCP",
-      "targetPort" : 3080
+      "targetPort" : 8080
     }, {
       "name" : "https",
       "port" : 443,
@@ -62,7 +62,7 @@
   "metadata" : {
     "annotations" : {
       "prometheus.io/scheme" : "http",
-      "prometheus.io/port" : "3080",
+      "prometheus.io/port" : "8080",
       "prometheus.io/path" : "/q/metrics",
       "prometheus.io/scrape" : "true"
     },
@@ -83,7 +83,7 @@
       "metadata" : {
         "annotations" : {
           "prometheus.io/scheme" : "http",
-          "prometheus.io/port" : "3080",
+          "prometheus.io/port" : "8080",
           "prometheus.io/path" : "/q/metrics",
           "prometheus.io/scrape" : "true"
         },
@@ -111,7 +111,7 @@
             "failureThreshold" : 3,
             "httpGet" : {
               "path" : "/q/health/live",
-              "port" : 3080,
+              "port" : 8080,
               "scheme" : "HTTP"
             },
             "initialDelaySeconds" : 5,
@@ -125,7 +125,7 @@
             "name" : "https",
             "protocol" : "TCP"
           }, {
-            "containerPort" : 3080,
+            "containerPort" : 8080,
             "name" : "http",
             "protocol" : "TCP"
           } ],
@@ -133,7 +133,7 @@
             "failureThreshold" : 3,
             "httpGet" : {
               "path" : "/q/health/ready",
-              "port" : 3080,
+              "port" : 8080,
               "scheme" : "HTTP"
             },
             "initialDelaySeconds" : 5,
@@ -155,7 +155,7 @@
             "failureThreshold" : 3,
             "httpGet" : {
               "path" : "/q/health/started",
-              "port" : 3080,
+              "port" : 8080,
               "scheme" : "HTTP"
             },
             "initialDelaySeconds" : 5,

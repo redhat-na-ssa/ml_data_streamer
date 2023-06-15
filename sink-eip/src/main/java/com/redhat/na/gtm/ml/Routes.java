@@ -46,17 +46,20 @@ public class Routes extends RouteBuilder {
 
         /*****                Consume from HTTP           *************/
         rest("/sanityCheck")
-            .post().to("seda:s3lifecycle")
             .get().to("direct:sanity");
                 
+        rest("/s3sanityCheck")
+            .post().to("seda:s3lifecycle");
+
         from("direct:sanity")
             .setBody().constant("Good To Go!");
 
         from("seda:s3lifecycle")
-            .setBody().constant("Good To Go!")
+            .setBody().constant("S3 sanity check")
             .process(e -> {
                 s3LifecycleProcessor.postBody(e);
             })
+            .setBody().constant("String sent to S3")
             .end();
 
         /************               Consume from Kafka          *****************/
@@ -69,6 +72,7 @@ public class Routes extends RouteBuilder {
             .doCatch(ValidationException.class)
                 .log(LoggingLevel.ERROR, exceptionMessage().toString())
             .end();
+        
 
 
     }

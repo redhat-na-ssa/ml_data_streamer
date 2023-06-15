@@ -12,16 +12,14 @@ import java.util.Set;
 
 import org.apache.camel.Exchange;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.eclipse.microprofile.health.Startup;
 import org.jboss.logging.Logger;
 
 import io.minio.BucketExistsArgs;
-import io.minio.ComposeObjectArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import io.minio.ObjectWriteResponse;
 import io.minio.PutObjectArgs;
-import io.minio.UploadObjectArgs;
+import io.minio.ObjectWriteArgs.Builder;
 import io.minio.errors.ErrorResponseException;
 import io.minio.errors.InsufficientDataException;
 import io.minio.errors.InternalException;
@@ -30,7 +28,6 @@ import io.minio.errors.ServerException;
 import io.minio.errors.XmlParserException;
 import io.quarkiverse.minio.client.MinioQualifier;
 import io.quarkus.runtime.StartupEvent;
-import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
@@ -49,6 +46,9 @@ public class S3LifecycleProcessor {
     @ConfigProperty(name = "com.rht.na.gtm.s3.printMinIOresponseHeaders", defaultValue="False")
     protected boolean printResponseHeaders;
 
+    @ConfigProperty(name = "com.rht.na.gtm.s3.putWithTags", defaultValue="True")
+    private boolean putWithTags;
+
     @ConfigProperty(name = "com.rht.na.gtm.s3.bucket.name")
     String bucketName;
 
@@ -59,7 +59,6 @@ public class S3LifecycleProcessor {
     @ConfigProperty(name = "com.rht.na.gtm.s3.minIOobjectTags")
     protected String minIOobjectTags;
 
-    //@PostConstruct
     void start(@Observes StartupEvent event) {
         try {
             boolean bucketExists = mClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
@@ -82,12 +81,7 @@ public class S3LifecycleProcessor {
         String body = (String)e.getIn().getBody();
         //log.info("postBody() posting to bucket :"+bucketName+" ; byte[] length = "+body.getBytes().length);
 
-        Map<String, String> tags = new HashMap<String, String>();
-        String[] tagsArray = minIOobjectTags.split(",");
-        for(String pairs : tagsArray){
-            String[] pair = pairs.split(":");
-            tags.put(pair[0], pair[1]);
-        }
+
 
         String objectName = minIOBucketPrefix+"/";
         byte[] fHeaderBytes = (byte[])e.getIn().getHeader(Util.FILE_NAME_HEADER);
@@ -96,7 +90,7 @@ public class S3LifecycleProcessor {
         }else{
             objectName = objectName + (new String(fHeaderBytes));
         }
-        log.infov("uploading object to {0} with following # of tags: {1}", bucketName, tags.size());
+        
         ObjectWriteResponse owResponse = null;
         InputStream iStream = null;
         try {
@@ -105,13 +99,30 @@ public class S3LifecycleProcessor {
             // Upload input stream with headers and user metadata.
             Map<String, String> headers = new HashMap<>();
             Map<String, String> userMetadata = new HashMap<>();
-            iStream = new ByteArrayInputStream(body.getBytes());
-            owResponse = mClient.putObject(
-                PutObjectArgs.builder().bucket(bucketName).object(objectName).stream(iStream, body.getBytes().length, -1)
-                .headers(headers)
-                .userMetadata(userMetadata)
-                .tags(tags)
-                .build());
+            iStream = new ByteArrayInputStream(body.getBytes());                
+            
+            Builder bObj = PutObjectArgs.builder().bucket(bucketName).object(objectName).stream(iStream, body.getBytes().length, -1)
+            .headers(headers)
+            .userMetadata(userMetadata);
+            
+            PutObjectArgs pOArgs;
+            if(putWithTags) {        
+                Map<String, String> tags = new HashMap<String, String>();
+                String[] tagsArray = minIOobjectTags.split(",");
+                for(String pairs : tagsArray){
+                    String[] pair = pairs.split(":");
+                    tags.put(pair[0], pair[1]);
+                }
+                log.infov("uploading object to {0} with following # of tags: {1}", bucketName, tags.size());
+                pOArgs = (PutObjectArgs) bObj.tags(tags).build();
+            } else {
+                log.infov("uploading object to {0} with zero tags", bucketName);
+                pOArgs = (PutObjectArgs) bObj.build();
+            }
+            
+            owResponse = mClient.putObject( pOArgs);
+
+
         } catch (InvalidKeyException | ErrorResponseException | InsufficientDataException | InternalException
                 | InvalidResponseException | NoSuchAlgorithmException | ServerException | XmlParserException
                 | IllegalArgumentException | IOException e1) {
