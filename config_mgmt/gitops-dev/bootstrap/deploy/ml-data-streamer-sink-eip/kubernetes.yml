@@ -3,8 +3,8 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   labels:
-    app.kubernetes.io/name: ml-data-streamer-sink-eip
     app.kubernetes.io/managed-by: quarkus
+    app.kubernetes.io/name: ml-data-streamer-sink-eip
   name: ml-data-streamer-sink-eip
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -23,10 +23,10 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    prometheus.io/scheme: http
-    prometheus.io/port: "8080"
-    prometheus.io/path: /q/metrics
     prometheus.io/scrape: "true"
+    prometheus.io/path: /q/metrics
+    prometheus.io/port: "8080"
+    prometheus.io/scheme: http
   labels:
     app.kubernetes.io/name: ml-data-streamer-sink-eip
     app.kubernetes.io/managed-by: quarkus
@@ -37,10 +37,6 @@ spec:
       port: 8080
       protocol: TCP
       targetPort: 8080
-    - name: https
-      port: 443
-      protocol: TCP
-      targetPort: 8443
   selector:
     app.kubernetes.io/name: ml-data-streamer-sink-eip
   type: ClusterIP
@@ -49,13 +45,13 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   annotations:
-    prometheus.io/scheme: http
-    prometheus.io/port: "8080"
-    prometheus.io/path: /q/metrics
     prometheus.io/scrape: "true"
+    prometheus.io/path: /q/metrics
+    prometheus.io/port: "8080"
+    prometheus.io/scheme: http
   labels:
-    app.kubernetes.io/name: ml-data-streamer-sink-eip
     app.kubernetes.io/managed-by: quarkus
+    app.kubernetes.io/name: ml-data-streamer-sink-eip
   name: ml-data-streamer-sink-eip
 spec:
   replicas: 1
@@ -65,13 +61,13 @@ spec:
   template:
     metadata:
       annotations:
-        prometheus.io/scheme: http
-        prometheus.io/port: "8080"
-        prometheus.io/path: /q/metrics
         prometheus.io/scrape: "true"
+        prometheus.io/path: /q/metrics
+        prometheus.io/port: "8080"
+        prometheus.io/scheme: http
       labels:
-        app.kubernetes.io/name: ml-data-streamer-sink-eip
         app.kubernetes.io/managed-by: quarkus
+        app.kubernetes.io/name: ml-data-streamer-sink-eip
     spec:
       containers:
         - env:
@@ -95,9 +91,6 @@ spec:
             timeoutSeconds: 10
           name: ml-data-streamer-sink-eip
           ports:
-            - containerPort: 8443
-              name: https
-              protocol: TCP
             - containerPort: 8080
               name: http
               protocol: TCP
@@ -137,7 +130,7 @@ spec:
             - pod
             - -lstrimzi.io/name=kafka-connect-connect
           image: quay.io/jbride/k8s-wait-for:no-root-v1.7
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           name: check-kafka
       serviceAccountName: ml-data-streamer-sink-eip
       volumes:
